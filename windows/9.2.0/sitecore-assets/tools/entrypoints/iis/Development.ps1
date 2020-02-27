@@ -9,8 +9,6 @@ $ErrorActionPreference = "STOP"
 
 Import-Module WebAdministration
 
-$timeFormat = "HH:mm:ss:fff"
-
 function Wait-WebItemState
 {
     param(
@@ -23,7 +21,7 @@ function Wait-WebItemState
 
     while ($true)
     {
-        Write-Host "$(Get-Date -Format $timeFormat): Waiting on item '$IISPath' state to be '$State'..."
+        Write-Host "### Waiting on item '$IISPath' state to be '$State'..."
 
         try
         {
@@ -48,7 +46,7 @@ function Wait-WebItemState
 
         if ($null -ne $item -and $item.State -eq $State)
         {
-            Write-Host "$(Get-Date -Format $timeFormat): Waiting on item '$IISPath' completed."
+            Write-Host "### Waiting on item '$IISPath' completed."
 
             break
         }
@@ -58,14 +56,14 @@ function Wait-WebItemState
 }
 
 # print start message
-Write-Host "$(Get-Date -Format $timeFormat): Sitecore Development ENTRYPOINT, starting..."
+Write-Host ("### Sitecore Development ENTRYPOINT, starting...")
 
 # wait for w3wp to stop
 while ($true)
 {
     $processName = "w3wp"
 
-    Write-Host "$(Get-Date -Format $timeFormat): Waiting for process '$processName' to stop..."
+    Write-Host "### Waiting for process '$processName' to stop..."
 
     $running = [array](Get-Process -Name $processName -ErrorAction "SilentlyContinue").Length -gt 0
 
@@ -75,7 +73,7 @@ while ($true)
     }
     else
     {
-        Write-Host "$(Get-Date -Format $timeFormat): Process '$processName' stopped..."
+        Write-Host "### Process '$processName' stopped..."
 
         break;
     }
@@ -94,11 +92,11 @@ if ($useVsDebugger)
     # start msvsmon.exe in background
     & "C:\remote_debugger\x64\msvsmon.exe" /noauth /anyuser /silent /nostatus /noclrwarn /nosecuritywarn /nofirewallwarn /nowowwarn /timeout:2147483646
 
-    Write-Host "$(Get-Date -Format $timeFormat): Started 'msvsmon.exe'."
+    Write-Host ("### Started 'msvsmon.exe'.")
 }
 else
 {
-    Write-Host "$(Get-Date -Format $timeFormat): Skipping start of 'msvsmon.exe', to enable you should mount the Visual Studio Remote Debugger directory into 'C:\remote_debugger'."
+    Write-Host ("### Skipping start of 'msvsmon.exe', to enable you should mount the Visual Studio Remote Debugger directory into 'C:\remote_debugger'.")
 }
 
 # check to see if we should start the Watch-Directory.ps1 script
@@ -142,12 +140,12 @@ if ($useWatchDirectory)
             exit 1
         }
 
-        Write-Host "$(Get-Date -Format $timeFormat): Job '$($job.Name)' started..."
+        Write-Host "### Job '$($job.Name)' started..."
     }
 }
 else
 {
-    Write-Host "$(Get-Date -Format $timeFormat): Skipping start of '$watchDirectoryJobName', to enable you should mount a directory into 'C:\src'."
+    Write-Host ("### Skipping start of '$watchDirectoryJobName', to enable you should mount a directory into 'C:\src'.")
 }
 
 # inject Sitecore config files
@@ -173,13 +171,13 @@ while ($true)
 {
     $processName = "ServiceMonitor"
 
-    Write-Host "$(Get-Date -Format $timeFormat): Waiting for process '$processName' to start..."
+    Write-Host "### Waiting for process '$processName' to start..."
 
     $running = [array](Get-Process -Name $processName -ErrorAction "SilentlyContinue").Length -eq 1
 
     if ($running)
     {
-        Write-Host "$(Get-Date -Format $timeFormat): Process '$processName' started..."
+        Write-Host "### Process '$processName' started..."
 
         break;
     }
@@ -191,7 +189,7 @@ while ($true)
 Wait-WebItemState -IISPath "IIS:\AppPools\DefaultAppPool" -State "Started"
 
 # print ready message
-Write-Host "$(Get-Date -Format $timeFormat): Sitecore ready!"
+Write-Host ("### Sitecore ready!")
 
 # start filebeat.exe in foreground
 & "C:\tools\bin\filebeat\filebeat.exe" -c (Join-Path $PSScriptRoot "\filebeat.yml")

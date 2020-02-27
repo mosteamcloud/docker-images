@@ -3,8 +3,6 @@ $ErrorActionPreference = "STOP"
 
 Import-Module WebAdministration
 
-$timeFormat = "HH:mm:ss:fff"
-
 function Wait-WebItemState
 {
     param(
@@ -17,7 +15,7 @@ function Wait-WebItemState
 
     while ($true)
     {
-        Write-Host "$(Get-Date -Format $timeFormat): Waiting on item '$IISPath' state to be '$State'..."
+        Write-Host "### Waiting on item '$IISPath' state to be '$State'..."
 
         try
         {
@@ -42,7 +40,7 @@ function Wait-WebItemState
 
         if ($null -ne $item -and $item.State -eq $State)
         {
-            Write-Host "$(Get-Date -Format $timeFormat): Waiting on item '$IISPath' completed."
+            Write-Host "### Waiting on item '$IISPath' completed."
 
             break
         }
@@ -52,14 +50,14 @@ function Wait-WebItemState
 }
 
 # print start message
-Write-Host ("$(Get-Date -Format $timeFormat): Sitecore Production ENTRYPOINT, starting...")
+Write-Host ("### Sitecore Production ENTRYPOINT, starting...")
 
 # wait for w3wp to stop
 while ($true)
 {
     $processName = "w3wp"
 
-    Write-Host "$(Get-Date -Format $timeFormat): Waiting for process '$processName' to stop..."
+    Write-Host "### Waiting for process '$processName' to stop..."
 
     $running = [array](Get-Process -Name $processName -ErrorAction "SilentlyContinue").Length -gt 0
 
@@ -69,7 +67,7 @@ while ($true)
     }
     else
     {
-        Write-Host "$(Get-Date -Format $timeFormat): Process '$processName' stopped..."
+        Write-Host "### Process '$processName' stopped..."
 
         break;
     }
@@ -80,8 +78,7 @@ while ($true)
 # wait for application pool to stop
 Wait-WebItemState -IISPath "IIS:\AppPools\DefaultAppPool" -State "Stopped"
 
-if (Test-Path -Path "C:\inetpub\wwwroot\App_Config\Include")
-{
+if (Test-Path -Path "C:\inetput\wwwroot\App_Config\Include") {
     # inject Sitecore config files
     Copy-Item -Path (Join-Path $PSScriptRoot "\*.config") -Destination "C:\inetpub\wwwroot\App_Config\Include"
 }
@@ -103,13 +100,13 @@ while ($true)
 {
     $processName = "ServiceMonitor"
 
-    Write-Host "$(Get-Date -Format $timeFormat): Waiting for process '$processName' to start..."
+    Write-Host "### Waiting for process '$processName' to start..."
 
     $running = [array](Get-Process -Name $processName -ErrorAction "SilentlyContinue").Length -eq 1
 
     if ($running)
     {
-        Write-Host "$(Get-Date -Format $timeFormat): Process '$processName' started..."
+        Write-Host "### Process '$processName' started..."
 
         break;
     }
@@ -121,7 +118,7 @@ while ($true)
 Wait-WebItemState -IISPath "IIS:\AppPools\DefaultAppPool" -State "Started"
 
 # print ready message
-Write-Host ("$(Get-Date -Format $timeFormat): Sitecore ready!")
+Write-Host ("### Sitecore ready!")
 
 # start filebeat.exe in foreground
 & "C:\tools\bin\filebeat\filebeat.exe" -c (Join-Path $PSScriptRoot "\filebeat.yml")
